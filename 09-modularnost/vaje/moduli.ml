@@ -53,6 +53,13 @@ module type NAT = sig
 
   val eq   : t -> t -> bool
   val zero : t
+  val one : t
+  val add : t -> t -> t
+  val substract : t -> t -> t
+  val multiply : t -> t -> t
+
+  val to_int : t -> int
+  val of_int : int -> t
   (* Dodajte manjkajoče! *)
   (* val to_int : t -> int *)
   (* val of_int : int -> t *)
@@ -70,10 +77,15 @@ end
 module Nat_int : NAT = struct
 
   type t = int
-  let eq x y = failwith "later"
+  let eq x y = x = y
   let zero = 0
+  let one = 1
   (* Dodajte manjkajoče! *)
-
+  let substract x y = x - y
+  let add x y = x + y
+  let multiply x y = x * y
+  let of_int x = x
+  let to_int x = x
 end
 
 (*----------------------------------------------------------------------------*]
@@ -90,12 +102,43 @@ end
 
 module Nat_peano : NAT = struct
 
-  type t = unit (* To morate spremeniti! *)
-  let eq x y = failwith "later"
-  let zero = () (* To morate spremeniti! *)
+  type t = Z | S of t 
+  let rec eq x y =
+    match x, y with
+    | Z, Z -> true
+    | S x, S y -> eq x y
+    | _, _ -> false
+
+  let zero = Z (* To morate spremeniti! *)
   (* Dodajte manjkajoče! *)
+  let one = S Z
+
+  let rec substract x y =
+    match x, y with
+    | S x, S y -> substract x y
+    | Z, _ -> Z
+    | _, Z -> x
+
+  let rec add x = function
+    | Z -> x
+    | S y -> S (add x y)
+
+  let rec multiply x = function
+    | Z -> Z
+    | S y -> add x (multiply x y)
+
+  let rec to_int = function
+    | Z -> 0
+    | S x -> 1 + (to_int x)
+
+  let rec of_int x = if x <= 0 then Z else S (of_int (x - 1))
 
 end
+
+;;
+
+let three = Nat_peano.of_int 3
+let seven = Nat_peano.of_int 7
 
 (*----------------------------------------------------------------------------*]
  V OCamlu lahko module podajamo kot argumente funkcij, z uporabo besede
@@ -118,7 +161,16 @@ end
  - : int = 4950
 [*----------------------------------------------------------------------------*)
 
-let sum_nat_100 (module Nat : NAT) = ()
+let sum_nat_100 (module Nat : NAT) =
+  let hundred = Nat.of_int 100 in
+  let rec sum_x_100 x =
+    if Nat.eq x hundred then
+      hundred
+    else
+      (* x + sum_x_100 (x+1) *)
+      Nat.add x (sum_x_100 (Nat.add x Nat.one))
+  in
+  sum_x_100 Nat.zero |> Nat.to_int
 
 (*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*]
  Now we follow the fable told by John Reynolds in the introduction.
@@ -132,7 +184,20 @@ let sum_nat_100 (module Nat : NAT) = ()
 
 module type COMPLEX = sig
   type t
+
   val eq : t -> t -> bool
+
+  val zero : t
+  val one : t
+  val i : t
+
+  val neg : t -> t
+  val conj : t -> t
+  
+  val add : t -> t -> t
+  val sub : t -> t -> t
+  val mult : t -> t -> t
+
   (* Dodajte manjkajoče! *)
 end
 
@@ -198,4 +263,4 @@ end
  - : unit = ()
 [*----------------------------------------------------------------------------*)
 
-let count (module Dict : DICT) list = ()
+(* let count (module Dict : DICT) list = () *)
