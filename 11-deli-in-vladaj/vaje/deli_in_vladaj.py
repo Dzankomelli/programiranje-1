@@ -27,6 +27,26 @@
 #     [10, 2, 0, 4, 11, 15, 17, 5, 18]
 ###############################################################################
 
+a = [10, 4, 5, 15, 11, 2, 17, 0, 18]
+
+def pivot(a, start, end):
+    if end <= start:
+        # Nothing to do
+        return start
+    # we havr an index, that tells us where the fist element larger
+    # than the pivot is, and we maintain that invariant throughout the loop
+    first_larger = start+1
+    for i in range(start, end+1):
+        if a[i] < a[start]:
+            # This element needs to end up on the left side of the pivot
+            a[first_larger], a[i] = a[i], a[first_larger]
+            # Switch it with the first_larger element and update
+            # that index
+            first_larger += 1
+    # Move the pivot the right place
+    # We swap its position with the last smaller element
+    a[start], a[first_larger-1] = a[first_larger-1], a[start]
+    return first_larger - 1
 
 
 ###############################################################################
@@ -44,6 +64,20 @@
 # jo rešite brez da v celoti uredite tabelo [a].
 ###############################################################################
 
+def kth_element_with_loop(a, k):
+    lower = 0
+    upper = len(a) -1
+    while True:
+        # See if the first element of the sublist is the k-th
+        candidate_i = pivot(a, lower, upper)
+        if candidate_i == k:
+            return a[candidate_i]
+        elif candidate_i < k:
+            # We continue searching amongst larger elements
+            lower = candidate_i+1
+        else:
+            # We contimue searcing amongst smaller elements
+            upper= candidate_i-1
 
 
 ###############################################################################
